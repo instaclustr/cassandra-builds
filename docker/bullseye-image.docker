@@ -10,6 +10,8 @@ VOLUME ${DEB_DIST_DIR}
 
 RUN echo 'deb http://deb.debian.org/debian sid main' >> /etc/apt/sources.list
 
+RUN dpkg --configure -a
+
 # install deps
 RUN apt-get update && apt-get -y install \
    build-essential \
