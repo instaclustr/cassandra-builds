@@ -19,13 +19,13 @@ RUN apt-get update && apt-get -y install \
    python3-dev
 
 RUN apt-get -y -t bullseye-backports --no-install-recommends install \
-   openjdk-11-jdk \
    sphinx-doc \
    sphinx-common \
+   openjdk-8-jdk \
    sphinx-rtd-theme-common \
    debhelper
 
-RUN update-java-alternatives --set java-1.11.0-openjdk-$(dpkg --print-architecture)
+RUN update-java-alternatives --set java-1.8.0-openjdk-$(dpkg --print-architecture)
 
 # install ant v1.10
 RUN mkdir /usr/share/antV110 && \
