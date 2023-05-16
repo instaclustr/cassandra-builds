@@ -10,18 +10,19 @@ VOLUME ${DEB_DIST_DIR}
 
 RUN echo 'deb http://deb.debian.org/debian sid main' >> /etc/apt/sources.list
 
+RUN apt-get update
+
 RUN dpkg --configure -a
 
 # install deps
-RUN apt-get update && apt-get -y install \
+RUN apt-get -y install \
    build-essential \
    curl \
    devscripts \
    git \
    wget \
    sudo \
-   python3-dev \
-   libxml-libxml-perl
+   python3-dev
 
 RUN apt-get -y -t bullseye-backports --no-install-recommends install \
    sphinx-doc \
