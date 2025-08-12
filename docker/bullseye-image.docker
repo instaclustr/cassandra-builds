@@ -26,11 +26,12 @@ RUN apt-get -y -t bullseye --no-install-recommends install \
 # dh-python is incompatible with python-is-python2, so we'll link it ourselves
 RUN ln -s /usr/bin/python2 /usr/bin/python
 
-RUN echo 'deb https://archive.debian.org/debian/ stretch main' >> /etc/apt/sources.list
+RUN wget -O - https://apt.corretto.aws/corretto.key | sudo gpg --dearmor -o /usr/share/keyrings/corretto-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/corretto-keyring.gpg] https://apt.corretto.aws stable main" | sudo tee /etc/apt/sources.list.d/corretto.list
 
-RUN apt-get update && apt-get -y install openjdk-8-jdk
+RUN apt-get update && apt-get -y install java-1.8.0-amazon-corretto-jdk
 
-RUN update-java-alternatives --set java-1.8.0-openjdk-$(dpkg --print-architecture)
+RUN update-java-alternatives --set java-1.8.0-amazon-corretto
 
 # install ant v1.10
 RUN mkdir /usr/share/antV110 && \
