@@ -18,13 +18,13 @@ RUN apt-get update && apt-get -y install \
    sudo
 
 RUN apt-get -y --no-install-recommends install \
-   openjdk-11-jdk \
+   openjdk-17-jdk \
    sphinx-doc \
    sphinx-common \
    sphinx-rtd-theme-common \
    debhelper
 
-RUN update-java-alternatives --set java-1.11.0-openjdk-$(dpkg --print-architecture)
+RUN update-java-alternatives --set java-1.17.0-openjdk-$(dpkg --print-architecture)
 
 # install ant v1.10
 RUN mkdir /usr/share/antV110 && \
