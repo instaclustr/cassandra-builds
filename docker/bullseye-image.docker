@@ -8,6 +8,18 @@ LABEL org.cassandra.buildenv=bullseye
 
 VOLUME ${DEB_DIST_DIR}
 
+# bullseye reached end-of-life on 2026-08-31, take main and bullseye-updates from the archive.
+# bullseye-security is not on archive.debian.org, and the indexes still served by
+# security.debian.org name pool files that have been deleted, so take it from a snapshot dated
+# just after end-of-life. The base image already has those security versions installed, so
+# without this source apt cannot resolve libc6-dev, perl or gnupg2 against the older archive.
+# Both the archive and the snapshot serve Release files past their Valid-Until.
+# Upstream: https://github.com/apache/cassandra-builds/commit/d0f23168add29f0c16e6ff157354f42485800f74
+RUN echo 'deb http://archive.debian.org/debian bullseye main' > /etc/apt/sources.list \
+ && echo 'deb http://archive.debian.org/debian bullseye-updates main' >> /etc/apt/sources.list \
+ && echo 'deb http://snapshot.debian.org/archive/debian-security/20260901T000000Z bullseye-security main' >> /etc/apt/sources.list \
+ && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/80no-check-valid-until
+
 # install deps
 RUN apt-get update && apt-get -y install \
    build-essential \
