@@ -1,0 +1,40 @@
+FROM debian:bookworm
+
+ENV DEB_DIST_DIR=/dist
+ENV BUILD_HOME=/home/build
+ENV CASSANDRA_DIR=$BUILD_HOME/cassandra
+
+LABEL org.cassandra.buildenv=bookworm
+
+VOLUME ${DEB_DIST_DIR}
+
+# install deps
+RUN apt-get update && apt-get -y install \
+   ant \
+   build-essential \
+   curl \
+   devscripts \
+   git \
+   wget \
+   sudo
+
+RUN apt-get -y --no-install-recommends install \
+   openjdk-17-jdk \
+   sphinx-doc \
+   sphinx-common \
+   sphinx-rtd-theme-common \
+   debhelper
+
+RUN update-java-alternatives --set java-1.17.0-openjdk-$(dpkg --print-architecture)
+
+# create and change to build user
+RUN adduser --disabled-login --gecos build build && gpasswd -a build sudo
+RUN echo "build ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/build && \
+   chmod 0440 /etc/sudoers.d/build
+
+USER build
+
+# clone Cassandra
+ARG CASSANDRA_GIT_URL=https://gitbox.apache.org/repos/asf/cassandra.git
+RUN git clone ${CASSANDRA_GIT_URL} ${CASSANDRA_DIR}
+WORKDIR ${CASSANDRA_DIR}
