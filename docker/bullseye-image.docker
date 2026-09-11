@@ -8,6 +8,21 @@ LABEL org.cassandra.buildenv=bullseye
 
 VOLUME ${DEB_DIST_DIR}
 
+# bullseye reached end-of-life on 2026-08-31, take main and bullseye-updates from the archive.
+# bullseye-security is not on archive.debian.org, and the indexes still served by
+# security.debian.org name pool files that have been deleted, so take it from a snapshot dated
+# just after end-of-life. The base image already has those security versions installed, so
+# without this source apt cannot resolve libc6-dev, perl or gnupg2 against the older archive.
+# Both the archive and the snapshot serve Release files past their Valid-Until.
+# These must be https: plain http to them times out on the Instaclustr build network. The base
+# image carries no ca-certificates, so peer verification is off; apt still authenticates the
+# repositories through their GPG signatures via debian-archive-keyring.
+# Upstream: https://github.com/apache/cassandra-builds/commit/d0f23168add29f0c16e6ff157354f42485800f74
+RUN echo 'deb https://archive.debian.org/debian bullseye main' > /etc/apt/sources.list \
+ && echo 'deb https://archive.debian.org/debian bullseye-updates main' >> /etc/apt/sources.list \
+ && echo 'deb https://snapshot.debian.org/archive/debian-security/20260901T000000Z bullseye-security main' >> /etc/apt/sources.list \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::https::Verify-Peer "false";\n' > /etc/apt/apt.conf.d/80no-check-valid-until
+
 # install deps
 RUN apt-get update && apt-get -y install \
    build-essential \
@@ -27,8 +42,10 @@ RUN apt-get -y --no-install-recommends install \
 RUN update-java-alternatives --set java-1.11.0-openjdk-$(dpkg --print-architecture)
 
 # install ant v1.10
+# downloads.apache.org only carries current releases, so it 404s a pinned version as soon as a
+# newer one ships. archive.apache.org keeps every release, so it stays valid.
 RUN mkdir /usr/share/antV110 && \
-    wget --tries 9 https://downloads.apache.org/ant/binaries/apache-ant-1.10.17-bin.tar.gz && \
+    wget --tries 9 https://archive.apache.org/dist/ant/binaries/apache-ant-1.10.17-bin.tar.gz && \
     tar --strip-components 1 -xf apache-ant-1.10.17-bin.tar.gz -C /usr/share/antV110 && \
     rm -f apache-ant-1.10.17-bin.tar.gz
 ENV ANT_HOME=/usr/share/antV110
